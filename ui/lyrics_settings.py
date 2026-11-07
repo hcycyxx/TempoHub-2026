@@ -568,24 +568,12 @@ class ApiClient(QObject):
             reply.abort()
 
 
-class StartupBridge(QObject):
-    ready = pyqtSignal()
+class AppLaunchBridge(QObject):
+    finished = pyqtSignal(str, bool)
 
 
 def api_get(path: str, timeout: float = 3.0):
     with urllib.request.urlopen(API_BASE + path, timeout=timeout) as response:
-        return json.loads(response.read().decode("utf-8"))
-
-
-def api_post(path: str, payload: dict, timeout: float = 5.0):
-    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-    request = urllib.request.Request(
-        API_BASE + path,
-        data=body,
-        headers={"Content-Type": "application/json; charset=utf-8"},
-        method="POST",
-    )
-    with urllib.request.urlopen(request, timeout=timeout) as response:
         return json.loads(response.read().decode("utf-8"))
 
 
@@ -617,29 +605,8 @@ def ensure_tempo_hub_running():
 
 
 def ensure_netease_running():
-    try:
-        with urllib.request.urlopen(
-            "http://127.0.0.1:9222/json/list", timeout=0.8
-        ):
-            return True
-    except Exception:
-        pass
-
-    try:
-        result = api_post("/api/ensure-netease", {}, timeout=15.0)
-        return bool(result.get("ready"))
-    except Exception:
-        pass
-
-    existing = subprocess.run(
-        ["tasklist", "/FI", "IMAGENAME eq cloudmusic.exe", "/NH"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if "cloudmusic.exe" in existing.stdout.casefold():
-        return False
-
+    # A normal launch brings an existing instance forward. Never stop music
+    # merely because its precise-progress endpoint is unavailable.
     candidates = [
         Path(os.environ.get("ProgramFiles", "")) / "NetEase/CloudMusic/cloudmusic.exe",
         Path(os.environ.get("ProgramFiles(x86)", "")) / "NetEase/CloudMusic/cloudmusic.exe",
@@ -652,21 +619,12 @@ def ensure_netease_running():
             [str(executable), "--remote-debugging-port=9222"],
             cwd=str(executable.parent),
             close_fds=True,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
         )
     except Exception:
         return False
 
-    deadline = time.monotonic() + 10.0
-    while time.monotonic() < deadline:
-        time.sleep(0.4)
-        try:
-            with urllib.request.urlopen(
-                "http://127.0.0.1:9222/json/list", timeout=0.8
-            ):
-                return True
-        except Exception:
-            continue
-    return False
+    return True
 
 
 def format_seconds(value):
@@ -892,6 +850,8 @@ class SettingsWindow(QMainWindow):
         self._allow_close = False
         self._force_close_revision = None
         self._progress_sample = None
+        self.launch_bridge = AppLaunchBridge(self)
+        self.launch_bridge.finished.connect(self._launch_finished)
         self.api = ApiClient(self)
         self._build_ui()
         self._build_resize_handles()
@@ -1069,6 +1029,18 @@ class SettingsWindow(QMainWindow):
             self.nav.addItem(QListWidgetItem(scene_icon(kind, color), text))
         self.nav.setCurrentRow(0)
         nav_layout.addWidget(self.nav, 1)
+        self.launch_hub_btn = QPushButton("拉起 TempoHub")
+        self.launch_netease_btn = QPushButton("拉起网易云")
+        self.launch_buttons = {"hub": self.launch_hub_btn, "netease": self.launch_netease_btn}
+        for kind, button in self.launch_buttons.items():
+            button.setObjectName("launchApp")
+            button.setCursor(Qt.CursorShape.PointingHandCursor)
+            button.clicked.connect(lambda checked=False, target=kind: self._launch_app(target))
+            nav_layout.addWidget(button)
+        self.launch_status = QLabel("按需启动应用，不会自动拉起")
+        self.launch_status.setObjectName("muted")
+        self.launch_status.setWordWrap(True)
+        nav_layout.addWidget(self.launch_status)
         self.nav_state = QLabel("正在读取设备场景…")
         self.nav_state.setObjectName("muted")
         self.nav_state.setWordWrap(True)
@@ -1659,6 +1631,41 @@ class SettingsWindow(QMainWindow):
         self._refresh_state()
         self._load_settings()
 
+    def _launch_app(self, kind):
+        button = self.launch_buttons[kind]
+        if not button.isEnabled():
+            return
+        button.setEnabled(False)
+        button.setText("正在拉起…")
+        self.launch_status.setText("正在拉起 " + ("TempoHub…" if kind == "hub" else "网易云…"))
+        launch = ensure_tempo_hub_running if kind == "hub" else ensure_netease_running
+        bridge = self.launch_bridge
+
+        def run():
+            try:
+                success = bool(launch())
+            except Exception:
+                success = False
+            try:
+                bridge.finished.emit(kind, success)
+            except RuntimeError:
+                pass  # The window was closed while the application was starting.
+
+        threading.Thread(target=run, name="launch-" + kind, daemon=True).start()
+
+    def _launch_finished(self, kind, success):
+        button = self.launch_buttons[kind]
+        button.setEnabled(True)
+        button.setText("拉起 TempoHub" if kind == "hub" else "拉起网易云")
+        if kind == "hub":
+            message = "TempoHub 已拉起并连接" if success else "未能连接 TempoHub，请检查程序后重试"
+        else:
+            message = "已发送网易云启动请求" if success else "无法拉起网易云，请检查安装位置"
+        self.launch_status.setText(message)
+        self.feedback.setText(message)
+        if success:
+            self._reconnect()
+
     def _state_received(self, state, error):
         recovered = error is None and self._poll_failures > 0
         self._connected = error is None
@@ -1761,15 +1768,6 @@ def main():
     app.setApplicationName("Halo PixelBar 控制台")
     window = SettingsWindow()
     window.show()
-    bridge = StartupBridge(window)
-    bridge.ready.connect(window._reconnect)
-
-    def start_services():
-        ensure_tempo_hub_running()
-        ensure_netease_running()
-        bridge.ready.emit()
-
-    threading.Thread(target=start_services, name="tempo-startup", daemon=True).start()
     sys.exit(app.exec())
 
 

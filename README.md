@@ -12,13 +12,16 @@
 无法实时同步的消息通知、游戏性能、自定义频谱预览和原生频谱律动已移除，相关导航、设置和设备指令已删除。
 TempoHub 原有 QQ 音乐歌词逻辑继续使用。窗口保留一体化圆角、红黄绿按钮、拖动、缩放和关闭前保存。
 
-当前版本 **v1.0.8**。可从 [最新 Release](https://github.com/blankhcy-dot/TempoHub-2026/releases/latest)
+已发布版本 **v1.0.8**。可从 [最新 Release](https://github.com/blankhcy-dot/TempoHub-2026/releases/latest)
 下载 `TempoHub-NetEase-Installer.exe`。安装包自带运行库，无需另装 Python；仍需先安装官方 EDIFIER TempoHub。
 
 ## 使用
 
-打开桌面快捷方式 **EDIFIER TempoHub - 歌词显示设置**，控制台会启动补丁版 TempoHub。
-如果 TempoHub 已随系统在后台启动，打开控制台也会唤起它的主界面，完成设备初始化。
+本地更新版改为手动启动：打开桌面快捷方式 **EDIFIER TempoHub - 歌词显示设置**，只打开控制台。
+使用左侧的 **拉起 TempoHub** 和 **拉起网易云** 按钮分别启动或唤起应用，两个按钮互不联动。
+控制台和 Hub 后台不会自动启动、重启网易云。已正常运行的应用会继续使用。
+通过按钮启动网易云时会带上精确进度参数；如果网易云原先已用普通方式启动，精确同步不可用时请自行退出网易云后再点击按钮。
+旧的 **EDIFIER TempoHub - 网易云歌词** 快捷方式也改为只打开控制台。
 右上角按钮从左到右为：最小化、最大化、关闭。
 本地更新后重新打开控制台，以载入新的页面代码。
 

@@ -30,7 +30,7 @@ $main.Arguments = (
 )
 $main.WorkingDirectory = $appDirPath
 $main.IconLocation = "$exe,0"
-$main.Description = "启动网易云精确同步和 EDIFIER TempoHub 歌词补丁"
+$main.Description = "打开歌词控制台，由按钮手动拉起 TempoHub 和网易云"
 $main.Save()
 
 $settingsLink = Join-Path $desktop "EDIFIER TempoHub - 歌词显示设置.lnk"

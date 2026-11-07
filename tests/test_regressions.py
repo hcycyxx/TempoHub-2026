@@ -170,6 +170,55 @@ class QtTests(unittest.TestCase):
         scale = pixmap.devicePixelRatio()
         self.assertEqual(image.pixelColor(round(100 * scale), round(24 * scale)).alpha(), 255)
 
+    def test_window_open_and_reconnect_never_launch_apps(self):
+        with patch.object(ui, "ensure_tempo_hub_running") as hub, \
+                patch.object(ui, "ensure_netease_running") as netease:
+            window = self.window()
+            window._reconnect()
+            QApplication.processEvents()
+            hub.assert_not_called()
+            netease.assert_not_called()
+
+    def test_manual_hub_button_only_launches_hub(self):
+        with patch.object(ui, "ensure_tempo_hub_running", return_value=True) as hub, \
+                patch.object(ui, "ensure_netease_running") as netease:
+            window = self.window()
+            window.launch_hub_btn.click()
+            pump_until(lambda: hub.called and window.launch_hub_btn.isEnabled())
+            hub.assert_called_once_with()
+            netease.assert_not_called()
+            self.assertIn("TempoHub 已拉起", window.launch_status.text())
+
+    def test_manual_netease_button_works_without_hub_and_only_launches_netease(self):
+        with patch.object(ui, "ensure_tempo_hub_running") as hub, \
+                patch.object(ui, "ensure_netease_running", return_value=True) as netease:
+            window = self.window()
+            window._connected = False
+            window.launch_netease_btn.click()
+            pump_until(lambda: netease.called and window.launch_netease_btn.isEnabled())
+            hub.assert_not_called()
+            netease.assert_called_once_with()
+
+    def test_manual_launch_is_responsive_and_suppresses_repeat_clicks(self):
+        gate = threading.Event()
+        def launch():
+            gate.wait(2)
+            return False
+        with patch.object(ui, "ensure_tempo_hub_running", side_effect=launch) as hub:
+            window = self.window()
+            window.launch_hub_btn.click()
+            try:
+                pump_until(lambda: hub.called)
+                self.assertFalse(window.launch_hub_btn.isEnabled())
+                self.assertTrue(window.launch_netease_btn.isEnabled())
+                window.launch_hub_btn.click()
+                hub.assert_called_once_with()
+                self.assertTrue(window.title_bar.close_button.isEnabled())
+            finally:
+                gate.set()
+            pump_until(window.launch_hub_btn.isEnabled)
+            self.assertIn("未能连接", window.launch_status.text())
+
     def test_custom_maximize_restore_and_double_click(self):
         window = self.window()
         window.title_bar.maximize_button.click()

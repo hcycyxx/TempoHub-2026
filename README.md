@@ -1,6 +1,6 @@
 <div align="center">
   <h1>TempoHub 网易云歌词</h1>
-  <p><strong>让 Halo PixelBar 显示网易云音乐的当前歌词，不改动官方客户端。</strong></p>
+  <p><strong>让 花再Halo PixelBar 显示网易云音乐的当前歌词，不改动官方客户端。</strong></p>
   <p>独立补丁副本 · 手动启动 · 两个页面</p>
   <p>
     <a href="#安装"><img src="https://img.shields.io/badge/platform-Windows-0078D6.svg" alt="Windows" /></a>

@@ -14,6 +14,12 @@
 
 这是 Windows 桌面补丁，适用于已安装官方 EDIFIER TempoHub、且官方程序内为 Python 3.9 的版本。安装器在本机读取官方 EXE 并生成一份独立副本，官方安装目录不受影响；TempoHub 原有的 QQ 音乐歌词逻辑继续保留。
 
+## 版本与下载
+
+本仓库目前没有独立 Release。另一仓库提供 [v1.0.8 历史安装包](https://github.com/blankhcy-dot/TempoHub-2026/releases/tag/v1.0.8)，但它的说明包含自动拉起 Hub 的行为，与本仓库当前源码的手动启动方式不同，不能保证安装包与当前源码一致。
+
+希望使用本页所述行为，请按以下源码安装流程操作；本仓库对应版本的 EXE 尚待构建和发布，不将历史包直接改名作为新版分发。
+
 ## 快速开始
 
 ```powershell
@@ -112,6 +118,16 @@ python installer.py
 
 补丁依赖用户已有的官方授权安装。若自行打包分发，请复核所含组件的许可，尤其是 PyQt6，见 [第三方声明](THIRD_PARTY_NOTICES.md)。
 
+## 更新与常见问题
+
+更新前退出补丁相关窗口，备份个人设置，保留旧补丁目录；在新的独立目录安装当前源码后再核对启动与同步行为。官方安装目录与个人设置的位置见上文。
+
+- **无法安装**：确认官方程序中存在 `_internal\python39.dll`，仅支持文档列出的 Windows 版本组合。
+- **歌词没有同步**：先核对设备和 TempoHub 连接，再确认网易云状态；当前源码不会自动拉起两个程序。
+- **安装包行为与本页不同**：核对下载来源。跨账号的 v1.0.8 不代表本仓库当前源码。
+
+[更新日志](CHANGELOG.md) 区分首页改动与程序变更。
+
 ## 文档
 
 | 文档 | 内容 |
@@ -119,6 +135,17 @@ python installer.py
 | [第三方声明](THIRD_PARTY_NOTICES.md) | Python、PyQt6、PyInstaller、SoundCard 等组件来源与许可 |
 | [安装与构建脚本](build_release.ps1) | 安装包构建流程 |
 | [安装器源码](installer.py) | 官方程序定位、补丁副本与快捷方式生成 |
+
+<!-- jack-white-rice-support:start -->
+## 请大肥鱼吃大白饭 🍚
+
+如果这个项目帮到了你，欢迎请大肥鱼吃一碗大白饭。自愿投喂，量力而行，感谢支持！
+
+<p>
+  <a href="assets/support/alipay-jack-v1.jpg"><img src="assets/support/alipay-jack-v1.jpg" alt="Jack 的支付宝收款码：请大肥鱼吃大白饭" height="320"></a>
+  <a href="assets/support/rice-meme-v1.png"><img src="assets/support/rice-meme-v1.png" alt="大肥鱼端碗表情包：饭呢？" height="320"></a>
+</p>
+<!-- jack-white-rice-support:end -->
 
 ## 许可与致谢
 

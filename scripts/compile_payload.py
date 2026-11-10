@@ -17,14 +17,18 @@ def main():
         subprocess.run([sys.executable, str(Path(__file__).resolve())], env=environment, check=True)
         return
     root = Path(__file__).resolve().parents[1]
+    suffix = os.environ.get("TEMPO_PAYLOAD_SUFFIX", "")
     for name in ("pixel_lyrics_util", "tempo_device_display"):
+        source = root / "src" / "app" / "utils" / (name + suffix + ".py")
+        if not source.is_file():
+            source = root / "src" / "app" / "utils" / (name + ".py")
         py_compile.compile(
-            str(root / "src" / "app" / "utils" / (name + ".py")),
-            cfile=str(root / "payload" / (name + ".cpython-39.pyc")),
+            str(source),
+            cfile=str(root / "payload" / (name + suffix + ".cpython-39.pyc")),
             dfile="app/utils/" + name + ".py",
             doraise=True,
         )
-        print("Compiled " + name)
+        print("Compiled " + name + suffix)
 
 
 if __name__ == "__main__":

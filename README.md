@@ -16,9 +16,9 @@
 
 ## 版本与下载
 
-本仓库目前没有独立 Release。另一仓库提供 [v1.0.8 历史安装包](https://github.com/blankhcy-dot/TempoHub-2026/releases/tag/v1.0.8)，但它的说明包含自动拉起 Hub 的行为，与本仓库当前源码的手动启动方式不同，不能保证安装包与当前源码一致。
+[v1.0.9 Release](https://github.com/hcycyxx/TempoHub-2026/releases/tag/v1.0.9) 提供包含歌词断连回退修复的安装器、源码文档包和校验值。另一仓库提供 [v1.0.8 历史安装包](https://github.com/blankhcy-dot/TempoHub-2026/releases/tag/v1.0.8)，但它的说明包含自动拉起 Hub 的行为，与本仓库当前源码的手动启动方式不同。
 
-希望使用本页所述行为，请按以下源码安装流程操作；本仓库对应版本的 EXE 尚待构建和发布，不将历史包直接改名作为新版分发。
+安装更新前退出补丁相关窗口，保留旧补丁目录；新版使用新的独立安装副本。
 
 ## 快速开始
 
